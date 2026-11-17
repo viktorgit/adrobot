@@ -120,7 +120,7 @@ function renderListShell() {
   $("#main").innerHTML = `
     <div class="page-heading"><div><div class="eyebrow">ВАШЕ РАБОЧЕЕ ПРОСТРАНСТВО</div><h1>Кампании</h1><p>Управляйте потоками и распределением трафика в Keitaro.</p></div><a href="#create" class="button primary">＋ Новая кампания</a></div>
     <div class="intro"><div><h3>От идеи до первого перехода</h3><p>Создайте кампанию за один шаг. Геофильтр, редирект и оффер уже будут на своих местах.</p></div><div class="mini-flow"><div class="flow-node"><b>◎</b>Трафик</div>→<div class="flow-node"><b>⑂</b>Потоки</div>→<div class="flow-node"><b>↗</b>Офферы</div></div></div>
-    <section class="panel" aria-label="Список кампаний"><div class="toolbar"><label class="search"><span aria-hidden="true">⌕</span><input id="campaign-search" placeholder="Поиск по названию или ID" aria-label="Поиск кампаний" value="${escapeHtml(query)}"></label><span class="muted small" id="campaign-count"></span></div><div class="table-header"><span>КАМПАНИЯ</span><span>ГРУППА</span><span>СТАТУС</span><span></span></div><div id="campaign-list"><div class="loading">Получаем кампании…</div></div><div class="pagination"><span id="pagination-label"></span><div><button class="button secondary" id="prev">←</button><button class="button secondary" id="next">→</button></div></div></section>`;
+    <section class="panel" aria-label="Список кампаний"><div class="toolbar"><label class="search"><span aria-hidden="true">⌕</span><input id="campaign-search" placeholder="Поиск по названию или ID" aria-label="Поиск кампаний" value="${escapeHtml(query)}"></label><span class="muted small" id="campaign-count"></span></div><div class="table-header"><span>КАМПАНИЯ</span><span>ГРУППА</span><span>СТАТУС</span><span>ДЕЙСТВИЕ</span></div><div id="campaign-list"><div class="loading">Получаем кампании…</div></div><div class="pagination"><span id="pagination-label"></span><div><button class="button secondary" id="prev">←</button><button class="button secondary" id="next">→</button></div></div></section>`;
   let timer;
   $("#campaign-search").oninput = (event) => {
     query = event.target.value;
@@ -160,7 +160,7 @@ async function loadCampaigns(version) {
     ? result.items
         .map(
           (c) => `
-    <a class="campaign-row" href="#campaign/${c.id}"><div><strong>${escapeHtml(c.name)}</strong><span class="row-id">#${c.id}</span></div><span class="small muted">${escapeHtml(c.group || "Без группы")}</span><span class="tag ${c.state === "active" ? "" : "disabled"}">${c.state === "active" ? "Активна" : "Выключена"}</span><span class="arrow">↗</span></a>`,
+    <a class="campaign-row" href="#campaign/${c.id}" aria-label="Редактировать кампанию ${escapeHtml(c.name)}"><div><strong>${escapeHtml(c.name)}</strong><span class="row-id">#${c.id}</span></div><span class="small muted">${escapeHtml(c.group || "Без группы")}</span><span class="tag ${c.state === "active" ? "" : "disabled"}">${c.state === "active" ? "Активна" : "Выключена"}</span><span class="campaign-edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m15 5 4 4M4 15 15 4a2.83 2.83 0 0 1 4 4L8 19l-5 2 1-6Z"/></svg><span>Редактировать</span></span></a>`,
         )
         .join("")
     : '<div class="empty"><h3>Кампании не найдены</h3><p>Попробуйте другой запрос или создайте новую кампанию.</p><a href="#create" class="button secondary">Создать кампанию</a></div>';
