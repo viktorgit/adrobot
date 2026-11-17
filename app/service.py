@@ -39,7 +39,7 @@ class CampaignService:
     def __init__(self, store: Store, keitaro):
         self.store = store
         self.keitaro = keitaro
-        self._offer_cache: tuple[float, list[dict]] = (0, [])
+        self._offer_cache: tuple[float, list[dict]] = (-float("inf"), [])
 
     def offers(self, query: str = "", offset: int = 0, limit: int = 30):
         if monotonic() - self._offer_cache[0] > 30:

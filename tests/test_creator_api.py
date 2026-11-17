@@ -79,6 +79,16 @@ def test_offer_search_by_id_name_and_pagination(client):
     assert client.get("/api/offers?limit=1000").status_code == 422
 
 
+def test_catalogue_loads_on_fresh_boot_and_expires_after_ttl(client, tracker, monkeypatch):
+    monkeypatch.setattr("app.service.monotonic", lambda: 5.0)
+    assert client.get("/api/offers").json()["total"] == 109
+    assert client.get("/api/offers").json()["total"] == 109
+    assert len([c for c in tracker.calls if c[:2] == ("GET", "offers")]) == 1
+    monkeypatch.setattr("app.service.monotonic", lambda: 36.0)
+    assert client.get("/api/offers").json()["total"] == 109
+    assert len([c for c in tracker.calls if c[:2] == ("GET", "offers")]) == 2
+
+
 def test_no_credentials_or_internal_snapshots_in_responses(client, synced):
     text = client.get("/api/campaigns/1").text
     for secret in ['"baseline"', '"remote"', "test-key", "Api-Key"]:
