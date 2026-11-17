@@ -401,7 +401,6 @@ main:focus {
 }
 .campaign-row {
   border-top: 1px solid #edf0e9;
-  cursor: pointer;
 }
 .campaign-row:hover {
   background: #f7faf3;
@@ -411,6 +410,12 @@ main:focus {
   font-size: 13px;
   font-weight: 600;
   overflow-wrap: anywhere;
+}
+.campaign-open {
+  min-width: 0;
+}
+.campaign-open:hover strong {
+  text-decoration: underline;
 }
 .row-id {
   font-family: Consolas, monospace;
@@ -446,15 +451,51 @@ main:focus {
   font-weight: 600;
   white-space: nowrap;
 }
-.campaign-edit svg {
+.campaign-edit svg,
+.edit-campaign svg {
   width: 16px;
   height: 16px;
   flex-shrink: 0;
 }
-.campaign-row:hover .campaign-edit,
-.campaign-row:focus-visible .campaign-edit {
+.campaign-edit:hover,
+.campaign-edit:focus-visible {
   border-color: var(--green);
   background: #e1edcf;
+}
+.editor-guide {
+  margin-bottom: 25px;
+  padding: 18px 22px;
+  border: 1px solid #dce6cf;
+  border-radius: 10px;
+  background: #edf3e5;
+  font-size: 13px;
+}
+.editor-guide p {
+  margin-top: 6px;
+  color: #65745a;
+  font-size: 12px;
+}
+.offer-summary-header,
+.offer-summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 75px;
+  gap: 16px;
+  align-items: center;
+  padding: 15px 24px;
+  border-top: 1px solid #edf0e6;
+}
+.offer-summary-header {
+  background: #fafbf7;
+  font-size: 10px;
+  color: #8b977f;
+  letter-spacing: 1px;
+}
+.offer-summary strong {
+  font-size: 13px;
+  color: #49633d;
+}
+.offer-summary.removed {
+  opacity: 0.6;
 }
 .pagination {
   display: flex;

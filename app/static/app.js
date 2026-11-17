@@ -18,6 +18,13 @@ let offerTarget = null;
 let offerPage = 0;
 let offerQuery = "";
 let offerSearchVersion = 0;
+const pencilIcon =
+  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m15 5 4 4M4 15 15 4a2.83 2.83 0 0 1 4 4L8 19l-5 2 1-6Z"/></svg>';
+
+function campaignRoute() {
+  const match = location.hash.match(/^#campaign\/(\d+)(\/edit)?$/);
+  return match ? { id: Number(match[1]), editing: Boolean(match[2]) } : null;
+}
 
 function toast(message, error = false) {
   const box = $("#toast");
@@ -94,8 +101,8 @@ async function renderRoute() {
     if (hash === "#create") {
       const metadata = await api("/metadata");
       if (version === routeVersion) renderCreate(metadata);
-    } else if (/^#campaign\/\d+$/.test(hash)) {
-      const id = Number(hash.split("/")[1]);
+    } else if (campaignRoute()) {
+      const { id } = campaignRoute();
       let document;
       try {
         document = await api(`/campaigns/${id}`);
@@ -160,7 +167,7 @@ async function loadCampaigns(version) {
     ? result.items
         .map(
           (c) => `
-    <a class="campaign-row" href="#campaign/${c.id}" aria-label="Редактировать кампанию ${escapeHtml(c.name)}"><div><strong>${escapeHtml(c.name)}</strong><span class="row-id">#${c.id}</span></div><span class="small muted">${escapeHtml(c.group || "Без группы")}</span><span class="tag ${c.state === "active" ? "" : "disabled"}">${c.state === "active" ? "Активна" : "Выключена"}</span><span class="campaign-edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m15 5 4 4M4 15 15 4a2.83 2.83 0 0 1 4 4L8 19l-5 2 1-6Z"/></svg><span>Редактировать</span></span></a>`,
+    <div class="campaign-row"><a class="campaign-open" href="#campaign/${c.id}" aria-label="Открыть кампанию ${escapeHtml(c.name)}"><strong>${escapeHtml(c.name)}</strong><span class="row-id">#${c.id}</span></a><span class="small muted">${escapeHtml(c.group || "Без группы")}</span><span class="tag ${c.state === "active" ? "" : "disabled"}">${c.state === "active" ? "Активна" : "Выключена"}</span><a class="campaign-edit" href="#campaign/${c.id}/edit" aria-label="Редактировать офферы кампании ${escapeHtml(c.name)}" title="Редактировать офферы">${pencilIcon}<span>Редактировать</span></a></div>`,
         )
         .join("")
     : '<div class="empty"><h3>Кампании не найдены</h3><p>Попробуйте другой запрос или создайте новую кампанию.</p><a href="#create" class="button secondary">Создать кампанию</a></div>';
@@ -218,12 +225,18 @@ function renderCreate(metadata) {
 
 function renderEditor() {
   const c = campaign;
-  if (!c || location.hash !== `#campaign/${c.id}`) return;
+  const route = campaignRoute();
+  if (!c || route?.id !== c.id) return;
+  const editing = route.editing;
+  const editableStreams = c.streams.filter((s) => s.editable && !s.missing);
+  const streams = editing ? editableStreams : c.streams;
+  const editLink = `<a class="button primary edit-campaign" href="#campaign/${c.id}/edit">${pencilIcon}Редактировать офферы</a>`;
   $("#main").innerHTML = `
-    <div class="breadcrumb"><a href="#campaigns">Кампании</a><span>/</span><span>#${c.id}</span></div>
-    <div class="page-heading"><div><div class="eyebrow">РЕДАКТОР КАМПАНИИ</div><h1>${escapeHtml(c.name)}</h1><div class="meta"><span>#${c.id}</span><span>${escapeHtml(c.group || "Без группы")}</span><span>${escapeHtml(c.domain || "Без домена")}</span></div></div><div class="header-actions"><a class="button secondary" href="${escapeHtml(c.admin_url)}" target="_blank" rel="noopener noreferrer">В Keitaro ↗</a><button class="button primary" id="sync-campaign">↓ Загрузить из Keitaro</button></div></div>
+    <div class="breadcrumb"><a href="#campaigns">Кампании</a><span>/</span>${editing ? `<a href="#campaign/${c.id}">${escapeHtml(c.name)}</a><span>/</span><span>Редактирование офферов</span>` : `<span>#${c.id}</span>`}</div>
+    <div class="page-heading"><div><div class="eyebrow">${editing ? "РЕДАКТОР ОФФЕРОВ" : "ОБЗОР КАМПАНИИ"}</div><h1>${editing ? "Редактирование офферов" : escapeHtml(c.name)}</h1>${editing ? `<p>${escapeHtml(c.name)}</p>` : ""}<div class="meta"><span>#${c.id}</span><span>${escapeHtml(c.group || "Без группы")}</span><span>${escapeHtml(c.domain || "Без домена")}</span></div></div><div class="header-actions">${editing ? `<a class="button secondary" href="#campaign/${c.id}">← К кампании</a>` : editLink}<a class="button secondary" href="${escapeHtml(c.admin_url)}" target="_blank" rel="noopener noreferrer">В Keitaro ↗</a><button class="button secondary" id="sync-campaign">↓ Загрузить из Keitaro</button></div></div>
+    ${editing ? '<div class="editor-guide"><strong>Добавляйте и убирайте офферы, меняйте их веса.</strong><p>Изменения сохраняются в черновик. Чтобы применить их в Keitaro, нажмите «Опубликовать» внизу потока. «Отменить» вернёт последнюю опубликованную версию.</p></div>' : ""}
     <div class="sync-note"><span>Синхронизация: ${escapeHtml(new Date(c.synced_at).toLocaleString("ru-RU"))}</span><span>${c.streams.length} потока · ${c.dirty_count ? `${c.dirty_count} с черновиком` : "Всё опубликовано"}</span></div>
-    <div id="streams">${c.streams.length ? c.streams.map(renderStream).join("") : '<div class="empty panel"><h3>В кампании пока нет потоков</h3><p>Создайте поток в Keitaro и загрузите данные повторно.</p></div>'}</div>`;
+    <div id="streams">${streams.length ? streams.map((s) => renderStream(s, editing)).join("") : `<div class="empty panel"><h3>${editing ? "Нет потоков для редактирования офферов" : "В кампании пока нет потоков"}</h3><p>Создайте поток с офферами в Keitaro и загрузите данные повторно.</p></div>`}</div>`;
   $("#sync-campaign").onclick = () =>
     run(async () => {
       campaign = await api(`/campaigns/${c.id}/sync`, "POST", {
@@ -302,7 +315,7 @@ function renderEditor() {
   };
 }
 
-function renderStream(stream) {
+function renderStream(stream, editing = false) {
   const active = stream.offers.filter((o) => o.state === "active").length;
   const button = (action, label, cls = "secondary", disabled = false) =>
     `<button class="button ${cls}" data-action="${action}" data-stream="${stream.id}" ${disabled ? "disabled" : ""}>${label}</button>`;
@@ -311,7 +324,12 @@ function renderStream(stream) {
     ${
       !stream.editable
         ? '<div class="opaque">Поток без редактора офферов. Его настройки сохраняются в Keitaro.</div>'
-        : `
+        : !editing
+          ? `
+    <div class="offer-summary-header"><span>ОФФЕР</span><span>ДОЛЯ</span></div>
+    ${stream.offers.map((o) => `<div class="offer-summary ${o.state !== "active" ? "removed" : ""}"><div class="offer-name"><span class="row-id">#${o.offer_id}${o.state === "removed" ? " · В архиве" : o.state !== "active" ? " · Отключён" : ""}</span>${escapeHtml(o.name)}</div><strong>${o.share}%</strong></div>`).join("")}
+    <div class="stream-footer"><span class="total">${active} активных · Всего<b>${stream.total}%</b></span><a class="button secondary edit-campaign" href="#campaign/${campaign.id}/edit">${pencilIcon}Редактировать офферы</a></div>`
+          : `
     <div class="offer-header"><span>ОФФЕР</span><span>ДОЛЯ</span><span>ВЕС</span><span>ДЕЙСТВИЕ</span></div>
     ${stream.offers.map((o) => `<div class="offer-row ${o.state !== "active" ? "removed" : ""}"><div class="offer-name"><span class="row-id">#${o.offer_id}${o.state === "removed" ? " · В архиве" : o.state !== "active" ? " · Отключён" : ""}</span>${escapeHtml(o.name)}</div><div class="weight"><input type="number" min="1" max="100" step="1" id="share-${stream.id}-${o.offer_id}" data-share data-stream="${stream.id}" data-offer="${o.offer_id}" value="${o.share}" aria-label="Вес оффера ${o.offer_id}" ${o.state !== "active" ? "disabled" : ""}><span>%</span></div><button class="pin-button ${o.pinned ? "pinned" : ""}" data-action="${o.pinned ? "unpin" : "pin"}" data-stream="${stream.id}" data-offer="${o.offer_id}" aria-pressed="${o.pinned}" ${o.state !== "active" ? "disabled" : ""}>${o.pinned ? "◆ Закреплён" : "◇ Закрепить"}</button><button class="remove-button ${o.state !== "active" ? "restore-button" : ""}" data-action="${o.state === "active" ? "remove" : "restore"}" data-stream="${stream.id}" data-offer="${o.offer_id}">${o.state === "active" ? "Убрать" : "Вернуть ↩"}</button></div>`).join("")}
     <div class="stream-footer">${button("add", "＋ Добавить оффер")}<span class="total ${stream.total !== 100 ? "invalid" : ""}">${active} активных · Всего<b>${stream.total}%</b></span><div class="header-actions">${button("cancel", "Отменить", "quiet", !stream.dirty)}${button("publish", "↑ Опубликовать", "primary", !stream.dirty || stream.total !== 100 || active === 0)}</div></div>`
