@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#214c39" />
+    <title>Adrobot — кампании Keitaro</title>
+    <link rel="icon" href="/static/icon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/static/styles.css" />
+    <script src="/static/app.js" defer></script>
+  </head>
+  <body>
+    <aside class="sidebar">
+      <a href="#campaigns" class="brand"
+        ><img
+          src="/static/icon.svg"
+          alt=""
+          width="34"
+          height="34"
+        />adrobot<span>workspace</span></a
+      >
+      <div class="nav-label">УПРАВЛЕНИЕ</div>
+      <nav aria-label="Главная навигация">
+        <a href="#campaigns" id="nav-campaigns"
+          ><span aria-hidden="true">▦</span>Кампании</a
+        >
+        <a href="#create" id="nav-create"
+          ><span aria-hidden="true">＋</span>Новая кампания</a
+        >
+      </nav>
+      <div class="sidebar-note">
+        <span class="connection-dot"></span> Keitaro Admin API<span
+          class="small"
+          >Один интерфейс. Все потоки.</span
+        >
+      </div>
+    </aside>
+    <div class="workspace">
+      <header class="topbar">
+        <span
+          >Рекламный трекер <span class="slash">/</span> Рабочее
+          пространство</span
+        ><span class="status" id="connection">Подключение…</span>
+      </header>
+      <main id="main" tabindex="-1">
+        <div class="loading">Загружаем рабочее пространство…</div>
+      </main>
+      <footer>
+        Adrobot <span>Создавайте, настраивайте, публикуйте.</span
+        ><a href="/docs" target="_blank" rel="noopener">API документация ↗</a>
+      </footer>
+    </div>
+    <div id="toast" role="status" aria-live="polite" hidden></div>
+    <dialog id="offer-dialog" aria-labelledby="offer-dialog-title">
+      <div class="dialog-heading">
+        <div>
+          <div class="eyebrow">КАТАЛОГ KEITARO</div>
+          <h2 id="offer-dialog-title">Выберите оффер</h2>
+        </div>
+        <button
+          type="button"
+          class="icon-button"
+          data-close="offer-dialog"
+          aria-label="Закрыть"
+        >
+          ×
+        </button>
+      </div>
+      <label class="search"
+        ><span aria-hidden="true">⌕</span
+        ><input
+          id="offer-search"
+          placeholder="Название или ID оффера"
+          autocomplete="off"
+          aria-label="Поиск офферов"
+      /></label>
+      <div class="offer-results" id="offer-results" aria-live="polite"></div>
+      <div class="dialog-footer">
+        <span id="offer-count" class="muted"></span
+        ><button type="button" id="offers-more" class="button secondary" hidden>
+          Показать ещё
+        </button>
+      </div>
+    </dialog>
+    <dialog id="auth-dialog" aria-labelledby="auth-title">
+      <form id="auth-form">
+        <div class="eyebrow">РАБОЧЕЕ ПРОСТРАНСТВО</div>
+        <h2 id="auth-title">Доступ к Adrobot</h2>
+        <p class="muted">Введите APP_ACCESS_TOKEN из настроек приложения.</p>
+        <label class="field"
+          >Токен доступа<input
+            type="password"
+            id="access-token"
+            required
+            autocomplete="off" /></label
+        ><button class="button primary" type="submit">Продолжить</button>
+      </form>
+    </dialog>
+  </body>
+</html>
